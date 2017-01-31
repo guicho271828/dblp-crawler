@@ -1,6 +1,8 @@
 
 # Dblp-Crawler - DBLP crawler
 
+cf. http://dblp.uni-trier.de/faq/Am+I+allowed+to+crawl+the+dblp+website
+
 ## Usage
 
 
