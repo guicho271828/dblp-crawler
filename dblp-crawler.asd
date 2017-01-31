@@ -24,7 +24,7 @@
   :bug-tracker "https://github.com/guicho271828/dblp-crawler/issues"
   :source-control (:git "https://github.com/guicho271828/dblp-crawler.git")
   :license "LLGPL"
-  :depends-on (:dexador :plump :trivia :alexandria :iterate)
+  :depends-on (:dexador :plump :clss :trivia :trivia.ppcre :alexandria :iterate :cl-syntax-interpol)
   :components ((:module "src"
                 :components
                 ((:file "package"))))
