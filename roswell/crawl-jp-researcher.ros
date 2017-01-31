@@ -1,0 +1,27 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(:cl-json :dblp-crawler) :silent t))
+
+(defpackage :ros.script.crawl-jp-researcher.3694873379
+  (:use :cl :dblp-crawler :cl-json :trivia))
+(in-package :ros.script.crawl-jp-researcher.3694873379)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (match argv
+    ((list (or "-c" "-j"))
+     (cl-json:encode-json (run-all)))
+    ((list* "-c" "-j" argv) (apply #'main "-j" argv))
+    ((list* "-j" "-c" argv) (apply #'main "-c" argv))
+    ((list* "-j" journal argv)
+     (let ((*journals* (cons journal *journals*)))
+       (apply #'main "-j" argv)))
+    ((list* "-c" conf argv)
+     (let ((*conferences* (cons conf *conferences*)))
+       (apply #'main "-c" argv)))))
+;;; vim: set ft=lisp lisp:

@@ -8,7 +8,11 @@
   (:use :cl :trivia :trivia.ppcre :alexandria :iterate :plump
         :arrow-macros)
   (:shadowing-import-from :arrow-macros :<>)
-  (:import-from :clss :select))
+  (:import-from :clss :select)
+  (:export
+   #:run-all
+   #:*conferences*
+   #:*journals*))
 (in-package :dblp-crawler)
 
 (cl-syntax:use-syntax :cl-interpol)
