@@ -160,7 +160,7 @@ ${+dblp+}/db/conf/[id/idyear]")
       ((vector e)
        (attribute e "href"))
       ((vector* e)
-       (warn "Perhaps there are multiple ~a" author)
+       (warn "Perhaps there are multiple ~a; Using the first candidate only" author)
        (attribute e "href")))))
 
 (defun author-metadata (author)
