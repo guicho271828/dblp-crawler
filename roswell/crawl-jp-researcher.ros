@@ -16,7 +16,9 @@ exec ros -Q -- $0 "$@"
   (match argv
     ((or nil
          (list (or "-c" "-j")))
-     (cl-json:encode-json (run-all) *standard-output*))
+     (cl-json:encode-json
+      (time (run-all))
+      *standard-output*))
     ((list* "-c" "-j" argv) (apply #'main "-j" argv))
     ((list* "-j" "-c" argv) (apply #'main "-c" argv))
     ((list* "-j" journal argv)
