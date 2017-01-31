@@ -5,7 +5,10 @@
 
 (in-package :cl-user)
 (defpackage dblp-crawler
-  (:use :cl :dexador :plump :trivia :alexandria :iterate))
+  (:use :cl :plump :trivia :alexandria :iterate))
 (in-package :dblp-crawler)
 
 ;; blah blah blah.
+;;  :dexador
+
+
