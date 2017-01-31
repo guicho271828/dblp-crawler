@@ -211,7 +211,7 @@ ${+dblp+}/db/conf/[id/idyear]")
     (handler-case
         (iter (initially (printn #?"Searching authors from researchmap.jp..."))
               (for author in authors)
-              (print #?" Searching ${author}")
+              (princ #?" Searching ${author}")
               (for jp-metadata = (author-metadata author))
               (if jp-metadata
                   (printn " --- found!")
