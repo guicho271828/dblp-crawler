@@ -153,7 +153,7 @@ ${+dblp+}/db/conf/[id/idyear]")
           ".snsview_card_div a"
           (parse
            (dex:get
-            #?"http://researchmap.jp/search/?user_name=${(quri:url-encode author)}&op=search")))))
+            #?"http://researchmap.jp/search/?lang=english&user_name=${(quri:url-encode author)}&op=search")))))
     (match elements
       ((vector)
        nil)
