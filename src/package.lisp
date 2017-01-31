@@ -5,7 +5,10 @@
 
 (in-package :cl-user)
 (defpackage dblp-crawler
-  (:use :cl :trivia :trivia.ppcre :alexandria :iterate :plump))
+  (:use :cl :trivia :trivia.ppcre :alexandria :iterate :plump
+        :arrow-macros)
+  (:shadowing-import-from :arrow-macros :<>)
+  (:import-from :clss :select))
 (in-package :dblp-crawler)
 
 (cl-syntax:use-syntax :cl-interpol)
@@ -35,7 +38,7 @@ http://dblp.uni-trier.de/db/journals/[id]/")
 
 (defun journal-volumes (journal)
   (iter (for x in-vector
-             (clss:select
+             (select
               "li > a"
               (parse
                (dex:get #?"${+dblp+}/db/journals/${journal}/"))))
@@ -51,7 +54,7 @@ http://dblp.uni-trier.de/db/journals/[id]/")
   (ematch volume
     ((ppcre (#?"${+dblp+}/db/journals/([^/]*)/.*\.html")
             journal)
-     (iter (for x in-vector (clss:select "li > a" (parse (dex:get volume))))
+     (iter (for x in-vector (select "li > a" (parse (dex:get volume))))
            (match x
              ((element :href (and xml
                                   (ppcre
@@ -59,7 +62,7 @@ http://dblp.uni-trier.de/db/journals/[id]/")
               (collect xml)))))))
 
 (defun paper-authors (paper)
-  (map 'list #'text (clss:select "author" (parse (dex:get paper)))))
+  (map 'list #'text (select "author" (parse (dex:get paper)))))
 
 
 (defun crawl-journal-authors ()
@@ -91,7 +94,7 @@ ${+dblp+}/db/conf/[id/idyear]")
   (let ((address #?"${+dblp+}/db/conf/${conf-year}.html"))
     (match conf-year
       ((ppcre ("([^/]*)/.*") conf)
-       (iter (for x in-vector (clss:select "li > a" (parse (dex:get address))))
+       (iter (for x in-vector (select "li > a" (parse (dex:get address))))
              (match x
                ((element :href (and xml
                                     (ppcre
@@ -123,28 +126,71 @@ ${+dblp+}/db/conf/[id/idyear]")
 ;; boolean not: prepend word by minus sign (-)
 ;; e.g., knuth -don
 
-;;; researchmap
+;;; researchmap author data
 
 ;; http://researchmap.jp/search/?user_name=Alex%20Fukunaga&op=search
 
-
 (defun author-page (author)
   (let ((elements
-         (clss:select
+         (select
           ".snsview_card_div a"
           (parse
            (dex:get
             #?"http://researchmap.jp/search/?user_name=${(quri:url-encode author)}&op=search")))))
-    (assert (= 1 (length elements)))
-    (attribute (elt elements 0) "href")))
+    (match elements
+      ((vector)
+       nil)
+      ((vector e)
+       (attribute e "href"))
+      ((vector* e)
+       (warn "Perhaps there are multiple ~a" author)
+       (attribute e "href")))))
 
 (defun author-metadata (author)
-  (let ((root (clss:select
-               ".cv_basic_item"
-               (parse (dex:get (author-page author))))))
-    (map 'list
-         (lambda (th td)
-           (cons (text th) (text td)))
-         (print (clss:select "th" root))
-         (print (clss:select "td" root)))))
+  (let ((address (author-page author)))
+    (when address
+      (let ((root (select
+                   ".cv_basic_item"
+                   (parse (dex:get address)))))
+        (map 'list
+             (lambda (th td)
+               (cons (text th) (text td)))
+             (select "th" root)
+             (select "td" root))))))
 
+;;; dblp author data
+
+;; http://dblp.uni-trier.de/search/author?author=Schek
+
+(defun author-dblpkeys (author)
+  (-<> (quri:url-encode author)
+    (dex:get #?"${+dblp+}/search/author?xauthor=${<>}")
+    (parse)
+    (select "author" <>)
+    (map 'list (lambda (x) (attribute x "urlpt")) <>)))
+
+(defun author-venues (author)
+  (flatten
+   (mapcar
+    (lambda (x)
+      (-<> (dex:get #?"${+dblp+}/rec/pers/${x}/xk")
+        (parse)
+        (select "dblpkey" <>)
+        (map 'list (lambda (e)
+                     (match (text e)
+                       ((split* "/" _ venue _) venue)))
+             <>)
+        (remove-duplicates <> :test #'equal)))
+    (author-dblpkeys author))))
+
+;;; combine
+
+(defun run-all ()
+  (iter (for author in (union (crawl-journal-authors)
+                            (crawl-conf-authors)
+                            :test 'equal))
+      (for jp-metadata = (author-metadata author))
+      (when jp-metadata
+        (collect
+            (list* (cons "venues" (author-venues author))
+                   jp-metadata)))))
