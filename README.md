@@ -16,12 +16,12 @@ cf. http://dblp.uni-trier.de/faq/Am+I+allowed+to+crawl+the+dblp+website
 Example usage (on bash):
 
 ```
-./crawl-jp-researcher.ros -j jair aamas jmlr \
-                          -c aaai/aaai{2012..2016} ijcai/ijcai{2012..2016} \
-                             ecai/ecai{2012..2016} atal/aamas{2012..2016} \
-                             nips/nips{2012..2016} kdd/kdd{2012..2016} \
-                             icaps/icaps{2012..2016} \
-                             > csv
+crawl-jp-researcher -j jair aamas jmlr \
+                    -c aaai/aaai{2012..2016} ijcai/ijcai{2012..2016} \
+                       ecai/ecai{2012..2016} atal/aamas{2012..2016} \
+                       nips/nips{2012..2016} kdd/kdd{2012..2016} \
+                       icaps/icaps{2012..2016} \
+                       > csv
 ```
 
 ## Author
