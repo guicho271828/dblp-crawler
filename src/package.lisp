@@ -23,7 +23,7 @@
 (define-constant +dblp+ "http://dblp.uni-trier.de" :test 'equal)
 
 (defparameter *journals*
-              `("jair")
+              `()                       ;"jair"
   #?"List of journals to search the authors for.
 http://dblp.uni-trier.de/db/journals/[id]/")
 
@@ -98,7 +98,7 @@ http://dblp.uni-trier.de/db/journals/[id]/")
     (hash-table-keys hash)))
 
 (defparameter *conferences*
-              `("aaai/aaai2016")
+              `()                       ;"aaai/aaai2016"
   "List of conferences to search the authors for.
 ${+dblp+}/db/conf/[id/idyear]")
 
