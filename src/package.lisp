@@ -216,6 +216,7 @@ ${+dblp+}/db/conf/[id/idyear]")
           (journal-ids)))
 
 (defun run-all ()
+  (printn #?"Start Crawling. C-c to interrupt at any time")
   (let ((acc nil)
         (authors (sort (union (crawl-journal-authors)
                               (crawl-conf-authors)
