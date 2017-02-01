@@ -41,12 +41,20 @@ http://dblp.uni-trier.de/db/journals/[id]/")
                                       ,subpattern)))))
                       (plist-alist args))))))
 
+(defmacro ignore-errors-and-return ((name &optional value) &body body)
+  `(handler-case
+       (progn ,@body)
+     (error ()
+       (return-from ,name ,@(when value `(,value))))
+     (USOCKET:NS-TRY-AGAIN-CONDITION ()
+       (return-from ,name ,@(when value `(,value))))))
+
 (defun journal-volumes (journal)
   (iter (for x in-vector
              (select
               "li > a"
               (parse
-               (ignore-errors
+               (ignore-errors-and-return (journal-volumes)
                  (dex:get #?"${+dblp+}/db/journals/${journal}/")))))
         (match x
           ((element :href
@@ -60,7 +68,8 @@ http://dblp.uni-trier.de/db/journals/[id]/")
   (ematch volume
     ((ppcre (#?"${+dblp+}/db/journals/([^/]*)/.*\.html")
             journal)
-     (iter (for x in-vector (select "li > a" (parse (ignore-errors
+     (iter (for x in-vector (select "li > a" (parse (ignore-errors-and-return
+                                                        (volume-papers)
                                                       (dex:get volume)))))
            (match x
              ((element :href (and xml
@@ -69,7 +78,8 @@ http://dblp.uni-trier.de/db/journals/[id]/")
               (collect xml)))))))
 
 (defun paper-authors (paper)
-  (map 'list #'text (select "author" (parse (ignore-errors
+  (map 'list #'text (select "author" (parse (ignore-errors-and-return
+                                                (paper-authors)
                                               (dex:get paper))))))
 
 (defun printn (thing)
@@ -111,7 +121,8 @@ ${+dblp+}/db/conf/[id/idyear]")
   (let ((address #?"${+dblp+}/db/conf/${conf-year}.html"))
     (match conf-year
       ((ppcre ("([^/]*)/.*") conf)
-       (iter (for x in-vector (select "li > a" (parse (ignore-errors
+       (iter (for x in-vector (select "li > a" (parse (ignore-errors-and-return
+                                                          (conf-papers)
                                                         (dex:get address)))))
              (match x
                ((element :href (and xml
@@ -156,7 +167,8 @@ ${+dblp+}/db/conf/[id/idyear]")
          (select
           ".snsview_card_div a"
           (parse
-           (ignore-errors
+           (ignore-errors-and-return
+               (author-page)
              (dex:get
             #?"http://researchmap.jp/search/?lang=english&user_name=${(quri:url-encode author)}&op=search"))))))
     (match elements
@@ -173,7 +185,8 @@ ${+dblp+}/db/conf/[id/idyear]")
     (when address
       (let ((root (select
                    ".cv_basic_item"
-                   (parse (ignore-errors
+                   (parse (ignore-errors-and-return
+                              (author-metadata)
                             (dex:get address))))))
         (map 'list
              (lambda (th td)
@@ -186,26 +199,26 @@ ${+dblp+}/db/conf/[id/idyear]")
 ;; http://dblp.uni-trier.de/search/author?author=Schek
 
 (defun author-dblpkeys (author)
-  (-<> (quri:url-encode author)
-    (ignore-errors
-      (dex:get #?"${+dblp+}/search/author?xauthor=${<>}"))
-    (parse)
-    (select "author" <>)
-    (map 'list (lambda (x) (attribute x "urlpt")) <>)))
+  (ignore-errors-and-return (author-dblpkeys)
+    (-<> (quri:url-encode author)
+      (dex:get #?"${+dblp+}/search/author?xauthor=${<>}")
+      (parse)
+      (select "author" <>)
+      (map 'list (lambda (x) (attribute x "urlpt")) <>))))
 
 (defun author-venues (author)
-  (flatten
-   (mapcar
-    (lambda (x)
-      (-<> (ignore-errors
-             (dex:get #?"${+dblp+}/rec/pers/${x}/xk"))
-        (parse)
-        (select "dblpkey" <>)
-        (map 'list (lambda (e)
-                     (match (text e)
-                       ((split* "/" _ venue _) venue)))
-             <>)))
-    (author-dblpkeys author))))
+  (ignore-errors-and-return (author-venues)
+    (flatten
+     (mapcar
+      (lambda (x)
+        (-<> (dex:get #?"${+dblp+}/rec/pers/${x}/xk")
+          (parse)
+          (select "dblpkey" <>)
+          (map 'list (lambda (e)
+                       (match (text e)
+                         ((split* "/" _ venue _) venue)))
+               <>)))
+      (author-dblpkeys author)))))
 
 ;;; combine
 
