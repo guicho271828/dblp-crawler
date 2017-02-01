@@ -1,32 +1,32 @@
 
-# Dblp-Crawler - DBLP crawler
+* Dblp-Crawler - DBLP crawler
 
 cf. http://dblp.uni-trier.de/faq/Am+I+allowed+to+crawl+the+dblp+website
 
-## Installation
+** Installation
 
-1. Install [Roswell](https://github.com/roswell/roswell) --- on Mac, `brew install roswell`
-2. `ros install guicho271828/dblp-crawler`
-3. `PATH=~/.roswell/bin:$PATH`
-4. `crawl-jp-researcher -j [journals...] -c [conference+year ids...]`
+1. Install [Roswell](https://github.com/roswell/roswell) --- on Mac, =brew install roswell=
+2. =ros install guicho271828/dblp-crawler=
+3. =PATH=~/.roswell/bin:$PATH=
+4. =crawl-jp-researcher -j [journals...] -c [conference+year ids...]=
 
-+ Journal ID: `http://dblp.uni-trier.de/db/journals/[ID]/` e.g. [jair](http://dblp.uni-trier.de/db/journals/jair/)
-+ Conference ID / Conference ID + year : `http://dblp.uni-trier.de/db/conf/[conf/conf+year].html` e.g. [aaai/aaai2016](http://dblp.uni-trier.de/db/conf/aaai/aaai2016.html)
+5. Journal ID: =http://dblp.uni-trier.de/db/journals/[ID]/= e.g. [[http://dblp.uni-trier.de/db/journals/jair/][jair]]
+6. Conference ID / Conference ID + year : =http://dblp.uni-trier.de/db/conf/[conf/conf+year].html= e.g. [[http://dblp.uni-trier.de/db/conf/aaai/aaai2016.html][aaai/aaai2016]]
 
 Example usage (on bash):
 
-```
+#+BEGIN_SRC   sh
 crawl-jp-researcher -j jair aamas jmlr \
                     -c aaai/aaai{2012..2016} ijcai/ijcai{2012..2016} \
                        ecai/ecai{2012..2016} atal/aamas{2012..2016} \
                        nips/nips{2012..2016} kdd/kdd{2012..2016} \
                        icaps/icaps{2012..2016} \
                        > csv
-```
+#+END_SRC
 
-## Example output
+** Example output
 
-```csv
+#+BEGIN_SRC 
 "研究者氏名"                     "所属"                                                        "職名"                    "jmlr"  "aamas"  "jair"  "icaps"  "kdd"  "nips"  "atal"  "ecai"  "ijcai"  "aaai"
 "姜　波"                         "川崎医療福祉大学"                                            "教授"                    1       0        0       0        1      0       0       0       1        1
 "韓　博"                         "旧所属　和歌山県立医科大学　大学院医学研究科"                NIL                       0       0        1       0        0      2       1       3       0        1
@@ -44,7 +44,7 @@ crawl-jp-researcher -j jair aamas jmlr \
 "岸本　章宏"                     NIL                                                           NIL                       0       0        0       0        1      1       1       2       3        6
 "AHMED　Mosad　Ibrahim　Ghneim"  "旧所属　愛媛大学　大学院医学系研究科　博士課程"              "その他"                  0       0        0       0        0      1       0       0       0        0
 "JATOWT，Adam　Wladyslaw"        "京都大学"                                                    NIL                       0       0        0       0        1      0       0       0       0        0
-```
+#+END_SRC
 
 | 研究者氏名                    | 所属                                                       | 職名                   | jmlr | aamas | jair | icaps | kdd | nips | atal | ecai | ijcai | aaai |
 |-------------------------------|------------------------------------------------------------|------------------------|------|-------|------|-------------|------|------|------|-------|------|
@@ -66,15 +66,15 @@ crawl-jp-researcher -j jair aamas jmlr \
 | JATOWT，Adam　Wladyslaw       | 京都大学                                                   | NIL                    |    0 |     0 |    0 |     0 |   1 |    0 |    0 |    0 |     0 |    0 |
 
 
-## Author
+** Author
 
-* Masataro Asai (guicho2.71828@gmail.com)
+Masataro Asai (guicho2.71828@gmail.com)
 
-## Copyright
+** Copyright
 
 Copyright (c) 2017 Masataro Asai (guicho2.71828@gmail.com)
 
-# License
+* License
 
 Licensed under the LLGPL License.
 
