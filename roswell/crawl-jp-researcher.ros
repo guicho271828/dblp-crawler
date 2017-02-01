@@ -16,9 +16,12 @@ exec ros -Q -- $0 "$@"
   (match argv
     ((or nil
          (list (or "-c" "-j")))
-     (cl-json:encode-json
-      (time (run-all))
-      *standard-output*))
+     (let ((*journals*    (remove-duplicates *journals* :test #'equal))
+           (*conferences* (remove-duplicates *conferences* :test #'equal))
+           (*trace-output* *error-output*))
+       (format t "~{~{~S~^ ~}~%~}"
+               (list* (list* "研究者氏名" "所属" "職名" (journal-ids))
+                      (time (run-all))))))
     ((list* "-c" "-j" argv) (apply #'main "-j" argv))
     ((list* "-j" "-c" argv) (apply #'main "-c" argv))
     ((list* "-j" journal argv)

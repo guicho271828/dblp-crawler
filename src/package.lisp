@@ -12,7 +12,8 @@
   (:export
    #:run-all
    #:*conferences*
-   #:*journals*))
+   #:*journals*
+   #:journal-ids))
 (in-package :dblp-crawler)
 
 (cl-syntax:use-syntax :cl-interpol)
@@ -124,7 +125,6 @@ ${+dblp+}/db/conf/[id/idyear]")
                     (for paper in (conf-papers conf))
                     (iter (initially (printn #?" Crawling ${paper}"))
                           (for author in (paper-authors paper))
-                          (print author)
                           (setf (gethash author hash) t))))
       (sb-sys:interactive-interrupt ()
         ))
@@ -196,17 +196,31 @@ ${+dblp+}/db/conf/[id/idyear]")
         (map 'list (lambda (e)
                      (match (text e)
                        ((split* "/" _ venue _) venue)))
-             <>)
-        (remove-duplicates <> :test #'equal)))
+             <>)))
     (author-dblpkeys author))))
 
 ;;; combine
 
+(defun journal-ids ()
+  (append *journals*
+          (remove-duplicates
+           (mapcar (lambda-match
+                     ((ppcre ("([^/]*)/.*") conf)
+                      conf))
+                   *conferences*)
+           :test #'equal)))
+
+(defun venue-histogram (author)
+  (mapcar (lambda (cj)
+            (count cj (author-venues author) :test #'equal))
+          (journal-ids)))
+
 (defun run-all ()
   (let ((acc nil)
-        (authors (union (crawl-journal-authors)
-                        (crawl-conf-authors)
-                        :test 'equal))
+        (authors (sort (union (crawl-journal-authors)
+                              (crawl-conf-authors)
+                              :test 'equal)
+                       #'string<))
         (*standard-output* *error-output*))
     (handler-case
         (iter (initially (printn #?"Searching authors from researchmap.jp..."))
@@ -214,12 +228,19 @@ ${+dblp+}/db/conf/[id/idyear]")
               (princ #?" Searching ${author}")
               (for jp-metadata = (author-metadata author))
               (if jp-metadata
-                  (printn " --- found!")
-                  (terpri))
-              (when jp-metadata
-                (push
-                 (list* (cons "venues" (author-venues author))
-                        jp-metadata)
-                 acc)))
+                  (let ((name
+                         (assoc "研究者氏名" jp-metadata :test #'equal))
+                        (affiliation
+                         (assoc "所属" jp-metadata :test #'equal))
+                        (status
+                         (assoc "職名" jp-metadata :test #'equal)))
+                    (printn " --- found!")
+                    (push
+                     (list* (cdr name)
+                            (cdr affiliation)
+                            (cdr status)
+                            (venue-histogram author))
+                     acc))
+                  (terpri)))
       (sb-sys:interactive-interrupt ()))
     acc))
