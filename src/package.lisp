@@ -46,7 +46,8 @@ http://dblp.uni-trier.de/db/journals/[id]/")
              (select
               "li > a"
               (parse
-               (dex:get #?"${+dblp+}/db/journals/${journal}/"))))
+               (ignore-errors
+                 (dex:get #?"${+dblp+}/db/journals/${journal}/")))))
         (match x
           ((element :href
                     (and href
@@ -59,7 +60,8 @@ http://dblp.uni-trier.de/db/journals/[id]/")
   (ematch volume
     ((ppcre (#?"${+dblp+}/db/journals/([^/]*)/.*\.html")
             journal)
-     (iter (for x in-vector (select "li > a" (parse (dex:get volume))))
+     (iter (for x in-vector (select "li > a" (parse (ignore-errors
+                                                      (dex:get volume)))))
            (match x
              ((element :href (and xml
                                   (ppcre
@@ -67,7 +69,8 @@ http://dblp.uni-trier.de/db/journals/[id]/")
               (collect xml)))))))
 
 (defun paper-authors (paper)
-  (map 'list #'text (select "author" (parse (dex:get paper)))))
+  (map 'list #'text (select "author" (parse (ignore-errors
+                                              (dex:get paper))))))
 
 (defun printn (thing)
   (write thing :escape nil)
@@ -108,7 +111,8 @@ ${+dblp+}/db/conf/[id/idyear]")
   (let ((address #?"${+dblp+}/db/conf/${conf-year}.html"))
     (match conf-year
       ((ppcre ("([^/]*)/.*") conf)
-       (iter (for x in-vector (select "li > a" (parse (dex:get address))))
+       (iter (for x in-vector (select "li > a" (parse (ignore-errors
+                                                        (dex:get address)))))
              (match x
                ((element :href (and xml
                                     (ppcre
@@ -152,8 +156,9 @@ ${+dblp+}/db/conf/[id/idyear]")
          (select
           ".snsview_card_div a"
           (parse
-           (dex:get
-            #?"http://researchmap.jp/search/?lang=english&user_name=${(quri:url-encode author)}&op=search")))))
+           (ignore-errors
+             (dex:get
+            #?"http://researchmap.jp/search/?lang=english&user_name=${(quri:url-encode author)}&op=search"))))))
     (match elements
       ((vector)
        nil)
@@ -168,7 +173,8 @@ ${+dblp+}/db/conf/[id/idyear]")
     (when address
       (let ((root (select
                    ".cv_basic_item"
-                   (parse (dex:get address)))))
+                   (parse (ignore-errors
+                            (dex:get address))))))
         (map 'list
              (lambda (th td)
                (cons (text th) (text td)))
@@ -181,7 +187,8 @@ ${+dblp+}/db/conf/[id/idyear]")
 
 (defun author-dblpkeys (author)
   (-<> (quri:url-encode author)
-    (dex:get #?"${+dblp+}/search/author?xauthor=${<>}")
+    (ignore-errors
+      (dex:get #?"${+dblp+}/search/author?xauthor=${<>}"))
     (parse)
     (select "author" <>)
     (map 'list (lambda (x) (attribute x "urlpt")) <>)))
@@ -190,7 +197,8 @@ ${+dblp+}/db/conf/[id/idyear]")
   (flatten
    (mapcar
     (lambda (x)
-      (-<> (dex:get #?"${+dblp+}/rec/pers/${x}/xk")
+      (-<> (ignore-errors
+             (dex:get #?"${+dblp+}/rec/pers/${x}/xk"))
         (parse)
         (select "dblpkey" <>)
         (map 'list (lambda (e)
